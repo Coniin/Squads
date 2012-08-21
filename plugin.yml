@@ -1,0 +1,7 @@
+name: Squads
+main: de.minefagroup.squads.Squads
+version: 0.2
+commands:
+   party:
+      description: Base Party
+      usage: /party [create|join|leave|list|kick|members]
