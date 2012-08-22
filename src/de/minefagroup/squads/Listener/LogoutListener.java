@@ -19,7 +19,8 @@ public class LogoutListener implements Listener{
 	@EventHandler(priority = EventPriority.NORMAL)
 	public void onPlayerQuitEvent(Player pl, String quitMsg){
 		if (master.getPlayersParty(pl)!=null){
-			master.leaveParty(pl);
+			//Need workover
+			master.pce.leaveParty(pl);
 		}
 	}
 	

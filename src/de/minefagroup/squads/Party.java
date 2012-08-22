@@ -1,7 +1,6 @@
 package de.minefagroup.squads;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class Party {
 	
