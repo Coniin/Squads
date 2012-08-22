@@ -194,7 +194,7 @@ public class PartyManager {
 			String partyName = master.getUtil().getMetadataString(pl, "Party", master);
 			return getParty(partyName);
 		}
-		
+			
 		public Party getParty(String pName) {
 			if (openPartys!=null){
 				for (Party parties : openPartys) {
@@ -204,6 +204,11 @@ public class PartyManager {
 				}
 			}	
 			return null;
+		}
+		
+		public boolean isInParty(Player pl){
+			Boolean isNull = (getPlayersParty(pl)!=null);
+			return isNull;
 		}
 		
 		public ArrayList<Party> getOpenPartys(){

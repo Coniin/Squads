@@ -1,0 +1,20 @@
+maxPartysize: 5
+groupbonus:
+	xpSharing: true
+	xpSharingRange: 5
+	
+	xpCreating: true
+	xpCreationFactor: 0.2
+	xpCreationMinRange: 5
+	xpCreationRange: 30
+	
+	attackStrenght: true
+	attackStrenghtHeartsPlus: 0.5
+	attackStrenghtRange: 10
+	
+	revieveOnDead: true
+	revieveTime: 30
+	deadPlayersCanAttack: false
+	
+	
+	

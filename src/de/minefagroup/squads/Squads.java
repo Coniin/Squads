@@ -28,7 +28,7 @@ public class Squads extends JavaPlugin {
 
 	public void onDisable() {
 		for (Player pl: this.getServer().getOnlinePlayers()){
-			//Need to Find workaround
+			//safe and reload
 			pm.leaveParty(pl);
 		}
 		pm = null;

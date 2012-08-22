@@ -50,6 +50,7 @@ public class PartyCmdExecutor implements CommandExecutor {
 				}
 				return false;
 			}
+			
 			//cmd: "/party join [partyToJoin]"
 			if (cmdSpec.equals("join")){
 				//Players, allowed to join Group
@@ -68,6 +69,7 @@ public class PartyCmdExecutor implements CommandExecutor {
 				}
 				return false;
 			}
+			
 			//cmd: "/party leave"
 			if (cmdSpec.equals("leave")){
 				//Players, allowed to leave Group
@@ -82,6 +84,7 @@ public class PartyCmdExecutor implements CommandExecutor {
 				}
 				return false;
 			}
+			
 			//cmd: "/party create [partyname]"
 			if (cmdSpec.equals("create")){
 				//Players, allowed to create Party (? Permissions)
@@ -101,12 +104,14 @@ public class PartyCmdExecutor implements CommandExecutor {
 				}
 				return false;
 			}
+			
 			//cmd "/party list"
 			if (cmdSpec.equals("list")){
 				//Player&Console, both allowed to see all Groups
 				pm.listPartys(sender);
 				return true;
 			}
+			
 			//cmd "/party members (groupname)", if no groupname playergroup is choosen
 			if (cmdSpec.equals("members")){
 				//Players, allowed to simply /party members
@@ -127,7 +132,8 @@ public class PartyCmdExecutor implements CommandExecutor {
 				}
 				return false;
 			}
-			//cmd "/party kick [playerToKick]"
+			
+			//cmd: "/party kick [playerToKick]"
 			if (cmdSpec.equals("kick")){
 				//Players, only allowed to kick som1 if creator of group or Op
 				if (isPlayer){
@@ -153,6 +159,12 @@ public class PartyCmdExecutor implements CommandExecutor {
 					sender.sendMessage("U got kicked by Server! Pls dont reconnect!");
 					return true;
 				}
+			}
+			
+			//cmd: "/party debug"
+			if (cmdSpec.equals("debug")){
+				sender.sendMessage(pm.isInParty(pl)+"");
+				return true;
 			}
 			return false;
 	}

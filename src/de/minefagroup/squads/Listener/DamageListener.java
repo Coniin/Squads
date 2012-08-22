@@ -15,18 +15,15 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
 import de.minefagroup.squads.Squads;
-import de.minefagroup.squads.customLists.Graveyard;
 import de.minefagroup.squads.customLists.Party;
 
 public class DamageListener implements Listener{
 	
 	Squads master;
-	Graveyard gy;
 	
 	public DamageListener(Squads plugin){
 		master = plugin;
 		master.getServer().getPluginManager().registerEvents(this, plugin);
-		gy = master.getGraveyard();
 	}
 	
 	@EventHandler(priority = EventPriority.NORMAL)
@@ -60,11 +57,13 @@ public class DamageListener implements Listener{
 		}
 	}
 	
+	//TODO: Check for Explosiondamage, Falldamage etc
 	public void dyingPlayer(EntityDamageByEntityEvent edepass){
 		EntityDamageByEntityEvent edbee = edepass;
 		if (edbee.getEntity() instanceof Player){
 			Player pl = (Player) edbee.getEntity();			
-			if (master.getPartyManager().getPlayersParty(pl)!=null){
+			//check if Player is in Party, else stop
+			if (!master.getPartyManager().isInParty(pl)){
 				return;
 			}
 			if (edbee.getDamage()>=pl.getHealth()){
@@ -79,11 +78,10 @@ public class DamageListener implements Listener{
 					s.setLine(1, "To revieve");
 					s.setLine(2, "destroy sign!");
 					s.update();
-					//saveBlockforRevive
+					//TODO: saveBlockforRevive
 				} else {
 					return;
 				}
-				pl.setNoDamageTicks(10);
 				edbee.setCancelled(true);				
 				//HidePlayer
 				for (Player toHideFrom : pl.getServer().getOnlinePlayers()){
@@ -98,7 +96,7 @@ public class DamageListener implements Listener{
 					((Creature) damager).setTarget(null);
 				}
 				//TODO: StopPlayerMovement
-				gy.playerDied(pl.getName());
+				master.getGraveyard().playerDied(pl.getName(), loc);
 			}
 		}
 	}
