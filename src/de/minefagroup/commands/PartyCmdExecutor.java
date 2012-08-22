@@ -3,6 +3,7 @@ package de.minefagroup.commands;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
 import de.minefagroup.squads.Party;
@@ -19,7 +20,73 @@ public class PartyCmdExecutor implements CommandExecutor {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label,
 			String[] args) {
-		if (cmd.getName().equalsIgnoreCase("party")) { 
+		
+			//check for Player, Op, and Console
+			boolean isPlayer = (sender instanceof Player);
+		    boolean isOp = isPlayer && ((Player) sender).isOp();
+		    boolean isConsole = (sender instanceof ConsoleCommandSender);
+		    
+	        //If sender isPlayer cast it
+	        Player pl = (isPlayer) ? (Player) sender : null;
+			
+	        //cmd: "/party"
+			if (args.length==0){
+				//forPlayer
+				if (isPlayer){
+					justParty(pl);
+					return true;
+				}
+				//forConsole
+				if (isConsole){
+					listPartys(sender);
+					return true;
+				}
+				return false;
+			}
+			//cmd: "/party [leave|list|members]"
+			if (args.length==1){
+				//cmd: "/party leave"
+				if (args[0].equalsIgnoreCase("leave")){
+					//forPlayer
+					if (isPlayer){
+						leaveParty(pl);
+						return true;
+					}
+					//forConsole
+					if (isConsole){
+						sender.sendMessage("A Console in Groups... noooot!");
+						return true;
+					}
+				}
+				//cmd: "/party list"
+				if (args[0].equalsIgnoreCase("list")){
+					//forPlayer&Console
+					listPartys(sender);
+					return true;
+				}
+				//cmd: "/party members"
+				if (args[0].equalsIgnoreCase("members")){
+					//forPlayer
+					if (isPlayer){
+						listMembers(pl, master.getPlayersParty(pl), true);
+					}
+				}
+				return false;
+			}
+			//cmd: /party [kick|members|join] (arg1)
+			if (args.length == 2){
+				//cmd: /party kick membername
+				if (args[0].equalsIgnoreCase("kick")){
+					String mbName = args[1];
+					//ForPlayer
+					if (isPlayer){
+						if (isOp||(pl.getName().equalsIgnoreCase(master.getPlayersParty(master.getPlayer(mbName)).getCreator()))){
+							//TODO
+						}
+					}
+				}
+			}
+			
 			//PlayerAndConsCmds
 						//-----------------------				
 						if ((args.length>=1)) {
@@ -80,7 +147,7 @@ public class PartyCmdExecutor implements CommandExecutor {
 							}
 
 						}
-					}
+					
 					return false;
 	}
 	
@@ -173,22 +240,33 @@ public class PartyCmdExecutor implements CommandExecutor {
 			} 
 		}
 		
-		public void listMembers(Player pl){
-			Party plParty = master.getPlayersParty(pl);
-			if (plParty!=null){
-				String creator = plParty.getCreator();
-				pl.sendMessage("#-----"+plParty.getName()+"-----#");
-				pl.sendMessage("Creator: "+master.colorByHealth(master.getPlayer(creator))+creator);
+		public void listMembers(Player pl, Party toList, boolean showHealth){
+			if (toList!=null){
+				String creator = toList.getCreator();
+				pl.sendMessage("#-----"+toList.getName()+"-----#");
+				//Show Health 
+				String toSend="Creator: ";
+				if (showHealth){
+					toSend+=master.colorByHealth(master.getPlayer(creator));
+				}
+				toSend+=creator;
+				pl.sendMessage(toSend);
+				//-
 				pl.sendMessage("Members:");
-				for (String member: plParty.getMember()){
+				for (String member: toList.getMember()){
 					if (!member.equalsIgnoreCase(creator)){
-						pl.sendMessage("     "+master.colorByHealth(master.getPlayer(member))+member);
+						toSend="     ";
+						if (showHealth){
+							toSend+=master.colorByHealth(master.getPlayer(member));
+						}
+						toSend+=member;
+						pl.sendMessage(toSend);
 					}
 				}
 			} else {
-				pl.sendMessage("U must be Member of a Party!");
+				pl.sendMessage("There is no Party by the Name!");
 			}
 		}
-			
-	
+		
+		
 }
