@@ -1,4 +1,4 @@
-package de.minefagroup.squads;
+package de.minefagroup.squads.customLists;
 
 import java.util.ArrayList;
 
@@ -7,18 +7,15 @@ public class Party {
 	private String name;
 	private String creator;
 	private ArrayList<String> members;
-	//      plName, aktivated
-	private ArrayList<String> deadPlayers;
 	//          id, count
 //	private HashMap<Integer, Integer> loot;
 	
-	public Party(String creatorN, String partyN){
-		this.name=partyN;
-		this.creator=creatorN;
+	public Party(String creator, String party){
+		this.name=party;
+		this.creator=creator;
 		members = new ArrayList<String>();
-		deadPlayers = new ArrayList<String>();
 //		loot = new HashMap<Integer, Integer>();
-		addMember(creatorN);
+		addMember(creator);
 	}
 		
 	public Boolean isMember(String plName){
@@ -34,6 +31,10 @@ public class Party {
 		return creator;
 	}
 	
+	public void rmCreator(){
+		creator = "";
+	}
+	
 	public Boolean isCreator(String clName){
 		return (clName.equalsIgnoreCase(creator));
 	}
@@ -43,31 +44,20 @@ public class Party {
 	}
 	
 	public void addMember(String plName){
-		members.add(plName);
+		members.add(plName.toLowerCase());
 	}
 	
 	public void rmMember(String plName){
-		members.remove(plName);
-		//Auszahlen
+		members.remove(plName.toLowerCase());
 	}
-	
-	public void memberSetDead(String plName){
-		if (!deadPlayers.contains(plName)){
-			deadPlayers.add(plName);
-		}
-	}
-	
-	public void memberSetLive(String plName){
-		if (deadPlayers.contains(plName)){
-			deadPlayers.remove(plName);
-		}
-	}
-	
-	public ArrayList<String> getCorps(){
-		return deadPlayers;
-	} 
 	
 	public String getName(){
 		return name;
 	}
+	
+	public int size(){
+		return members.size();
+	}
+	
+	
 }

@@ -6,9 +6,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
-import de.minefagroup.squads.Party;
 import de.minefagroup.squads.PartyManager;
 import de.minefagroup.squads.Squads;
+import de.minefagroup.squads.customLists.Party;
 
 public class PartyCmdExecutor implements CommandExecutor {
 	
@@ -30,7 +30,7 @@ public class PartyCmdExecutor implements CommandExecutor {
 		    boolean isConsole = (sender instanceof ConsoleCommandSender);
 		    
 		    //Casting args to Strings
-	        String cmdSpec = args[0].toLowerCase();
+	        String cmdSpec = (args.length > 0) ? args[0].toLowerCase() : "";
 	        String cmdArg1 = (args.length > 1) ? args[1].toLowerCase() : "";
 		    
 	        //If sender isPlayer cast it
@@ -78,7 +78,7 @@ public class PartyCmdExecutor implements CommandExecutor {
 				//Console, cant join, so it shouldnt be possible to leave
 				if (isConsole){
 					sender.sendMessage("U couldnt join a Group. so how to leave one?");
-					sender.sendMessage("If u want some1 other to leave us /party kick [playername]");
+					sender.sendMessage("If u want some1 other to leave use /party kick [playername]");
 				}
 				return false;
 			}
@@ -96,7 +96,7 @@ public class PartyCmdExecutor implements CommandExecutor {
 				}
 				//Console, atm not allowed to create party, prob new cmd: /party create [partyname] [ownername]
 				if (isConsole){
-					sender.sendMessage("U r here to work, let the Players play!");
+					sender.sendMessage("U r here to work, let the Players play in Partys!");
 					return true;
 				}
 				return false;
@@ -105,6 +105,7 @@ public class PartyCmdExecutor implements CommandExecutor {
 			if (cmdSpec.equals("list")){
 				//Player&Console, both allowed to see all Groups
 				pm.listPartys(sender);
+				return true;
 			}
 			//cmd "/party members (groupname)", if no groupname playergroup is choosen
 			if (cmdSpec.equals("members")){
@@ -145,7 +146,7 @@ public class PartyCmdExecutor implements CommandExecutor {
 				//Console, allowed to kick som1
 				if (isConsole){
 					if (!cmdArg1.isEmpty()){
-						pm.kickMember((CommandSender) pl, cmdArg1);
+						pm.kickMember(sender, cmdArg1);
 						return true;
 					}
 					sender.sendMessage("Who should be kicked? U? Yeah Prob U should");

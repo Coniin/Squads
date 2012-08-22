@@ -7,15 +7,18 @@ import de.minefagroup.commands.PartyCmdExecutor;
 import de.minefagroup.squads.Listener.DamageListener;
 import de.minefagroup.squads.Listener.LogoutListener;
 import de.minefagroup.squads.Listener.TargetListener;
+import de.minefagroup.squads.customLists.Graveyard;
 
 public class Squads extends JavaPlugin {
 
 	private PartyManager pm = null;
 	private Util util = null;
+	private Graveyard gy = null;
 
 	public void onEnable() {
 		pm = new PartyManager(this);
 		util = new Util(this);
+		gy = new Graveyard();
 		
 		new DamageListener(this);
 		new LogoutListener(this);
@@ -38,6 +41,10 @@ public class Squads extends JavaPlugin {
 	
 	public Util getUtil(){
 		return util;
+	}
+	
+	public Graveyard getGraveyard(){
+		return gy;
 	}
 	
 }

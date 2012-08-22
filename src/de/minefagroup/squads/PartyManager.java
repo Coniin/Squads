@@ -6,6 +6,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
+import de.minefagroup.squads.customLists.Party;
+
 public class PartyManager {
 	
 		Squads master;
@@ -46,9 +48,7 @@ public class PartyManager {
 				pl.sendMessage("U have to leave ur Group "+oldParty+" first!");
 			} else {
 			if (plParty != null) {
-				plParty.addMember(pl.getName());
-				master.getUtil().setMetadata(pl, "Party",
-						(Object) plParty.getName(), master);
+				addMember(pl, partyN);
 				pl.sendMessage("U joined the Party " + partyN);
 				sayToPartyExcept(pl.getName()+" has joined ur Party!", plParty, pl.getName());
 			} else {
@@ -58,15 +58,11 @@ public class PartyManager {
 		
 		public void leaveParty(Player pl){
 			Party plParty = getPlayersParty(pl);
-			if (plParty!=null){
-				plParty.rmMember(pl.getName());
+			if (plParty!=null){			
 				master.getUtil().setMetadata(pl, "Party", null, master);
-				pl.sendMessage("U leaved Party "+ plParty.getName());
-				if (plParty.getMember().size() <= 0) {
-					unregisterParty(plParty);
-				} else {
-					sayToParty(pl.getName()+" has left ur Party!", plParty);
-				}
+				pl.sendMessage("U leaved Party "+ plParty.getName());			
+				rmMember(pl.getName(), plParty);
+				sayToParty(pl.getName()+" has left ur Party!", plParty);
 			} else {
 				pl.sendMessage("U cant leave Nothing!");
 			}
@@ -85,15 +81,17 @@ public class PartyManager {
 		public void kickMember(CommandSender cmdSd, String toKick){
 			Player plToKick = master.getUtil().getPlayer(toKick);
 			Party plParty = master.getPartyManager().getPlayersParty(plToKick);
-			if (plParty.isMember(toKick)){
-				plParty.rmMember(toKick);			
-				plToKick.sendMessage("U got kicked from Party "+plParty.getName());
-				cmdSd.sendMessage("U kicked "+toKick+" from Party "+plParty.getName());
+			if (plParty.isMember(toKick)){			
 				//Say to everyone in Party except the kickSender if he is Member
 				Boolean isPlayer = (cmdSd instanceof Player);
 				Player pl = (isPlayer ? (Player) cmdSd : null);
-				String plName = (isPlayer) ? pl.getName() : "";
+				String plName = (isPlayer) ? pl.getName() : "";			
+				rmMember(toKick, plParty);
+				//inform everyone 'bout kicking
 				sayToPartyExcept(toKick + " got kicked from ur Group", plParty, plName);
+				plToKick.sendMessage("U got kicked from Party "+plParty.getName());
+				cmdSd.sendMessage("U kicked "+toKick+" from Party "+plParty.getName());
+				//sayToParty(toKick + " got kicked from ur Group", plParty);				
 			} else {
 				cmdSd.sendMessage(toKick + " is no Member of "+ plParty.getName());
 			}
@@ -162,6 +160,26 @@ public class PartyManager {
 					master.getUtil().getPlayer(member).sendMessage(toSay);
 				}				
 			}
+		}
+		
+		//unregister a Group when the last Member leaves
+		public void rmMember(String plName, Party paName){
+			paName.rmMember(plName);
+			if (paName.isCreator(plName)){
+				paName.rmCreator();
+			}
+			if (paName.size()<=0){
+				unregisterParty(paName);
+			}
+			Player pl = master.getUtil().getPlayer(plName);
+			master.getUtil().setMetadata(pl, "Party", null, master);
+		}
+		
+		public void addMember(Player pl, String paName){
+			Party plParty = getParty(paName);
+			plParty.addMember(pl.getName());
+			master.getUtil().setMetadata(pl, "Party",
+					(Object) plParty.getName(), master);
 		}
 		
 		public void registerParty(Party toReg) {

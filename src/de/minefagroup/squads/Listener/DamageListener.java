@@ -14,16 +14,19 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
-import de.minefagroup.squads.Party;
 import de.minefagroup.squads.Squads;
+import de.minefagroup.squads.customLists.Graveyard;
+import de.minefagroup.squads.customLists.Party;
 
 public class DamageListener implements Listener{
 	
 	Squads master;
+	Graveyard gy;
 	
 	public DamageListener(Squads plugin){
 		master = plugin;
 		master.getServer().getPluginManager().registerEvents(this, plugin);
+		gy = master.getGraveyard();
 	}
 	
 	@EventHandler(priority = EventPriority.NORMAL)
@@ -95,7 +98,7 @@ public class DamageListener implements Listener{
 					((Creature) damager).setTarget(null);
 				}
 				//TODO: StopPlayerMovement
-				master.getPartyManager().getParty(pl.getName()).memberSetDead(pl.getName());	
+				gy.playerDied(pl.getName());
 			}
 		}
 	}
