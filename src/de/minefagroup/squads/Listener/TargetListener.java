@@ -22,7 +22,7 @@ public class TargetListener implements Listener {
 	public void onEntityTarget(EntityTargetEvent ete){
 		if (ete.getTarget() instanceof Player){
 			Player pl = (Player) ete.getTarget();
-			Party plParty = master.getParty(pl.getName());
+			Party plParty = master.getPartyManager().getParty(pl.getName());
 			if (plParty!=null){
 				for (String corpseNames : plParty.getCorps()){
 					if (corpseNames.equalsIgnoreCase(pl.getName())){

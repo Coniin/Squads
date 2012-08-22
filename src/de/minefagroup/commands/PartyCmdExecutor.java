@@ -7,14 +7,17 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
 import de.minefagroup.squads.Party;
+import de.minefagroup.squads.PartyManager;
 import de.minefagroup.squads.Squads;
 
 public class PartyCmdExecutor implements CommandExecutor {
 	
 	Squads master;
+	PartyManager pm;
 	
 	public PartyCmdExecutor(Squads master){
 		this.master = master;
+		pm = master.getPartyManager();
 	}
 	
 	@Override
@@ -26,247 +29,134 @@ public class PartyCmdExecutor implements CommandExecutor {
 		    boolean isOp = isPlayer && ((Player) sender).isOp();
 		    boolean isConsole = (sender instanceof ConsoleCommandSender);
 		    
+		    //Casting args to Strings
+	        String cmdSpec = args[0].toLowerCase();
+	        String cmdArg1 = (args.length > 1) ? args[1].toLowerCase() : "";
+		    
 	        //If sender isPlayer cast it
 	        Player pl = (isPlayer) ? (Player) sender : null;
-			
+	        
 	        //cmd: "/party"
 			if (args.length==0){
 				//forPlayer
 				if (isPlayer){
-					justParty(pl);
+					pm.justParty(pl);
 					return true;
 				}
 				//forConsole
 				if (isConsole){
-					listPartys(sender);
+					pm.listPartys(sender);
 					return true;
 				}
 				return false;
 			}
-			//cmd: "/party [leave|list|members]"
-			if (args.length==1){
-				//cmd: "/party leave"
-				if (args[0].equalsIgnoreCase("leave")){
-					//forPlayer
-					if (isPlayer){
-						leaveParty(pl);
+			//cmd: "/party join [partyToJoin]"
+			if (cmdSpec.equals("join")){
+				//Players, allowed to join Group
+				if (isPlayer){
+					if (!cmdArg1.isEmpty()){
+						pm.joinParty(pl, cmdArg1);
 						return true;
 					}
-					//forConsole
-					if (isConsole){
-						sender.sendMessage("A Console in Groups... noooot!");
-						return true;
-					}
-				}
-				//cmd: "/party list"
-				if (args[0].equalsIgnoreCase("list")){
-					//forPlayer&Console
-					listPartys(sender);
+					pl.sendMessage("I'm no god, simply a server pls define a group to join: /party join [partToJoin]");
 					return true;
 				}
-				//cmd: "/party members"
-				if (args[0].equalsIgnoreCase("members")){
-					//forPlayer
-					if (isPlayer){
-						listMembers(pl, master.getPlayersParty(pl), true);
-					}
+				//Console, not allowed to join Group
+				if (isConsole){
+					sender.sendMessage("Only a Player could join a Party!");
+					return true;
 				}
 				return false;
 			}
-			//cmd: /party [kick|members|join] (arg1)
-			if (args.length == 2){
-				//cmd: /party kick membername
-				if (args[0].equalsIgnoreCase("kick")){
-					String mbName = args[1];
-					//ForPlayer
-					if (isPlayer){
-						if (isOp||(pl.getName().equalsIgnoreCase(master.getPlayersParty(master.getPlayer(mbName)).getCreator()))){
-							//TODO
-						}
+			//cmd: "/party leave"
+			if (cmdSpec.equals("leave")){
+				//Players, allowed to leave Group
+				if (isPlayer){
+					pm.leaveParty(pl);
+					return true;
+				}
+				//Console, cant join, so it shouldnt be possible to leave
+				if (isConsole){
+					sender.sendMessage("U couldnt join a Group. so how to leave one?");
+					sender.sendMessage("If u want some1 other to leave us /party kick [playername]");
+				}
+				return false;
+			}
+			//cmd: "/party create [partyname]"
+			if (cmdSpec.equals("create")){
+				//Players, allowed to create Party (? Permissions)
+				if (isPlayer){
+					if (!cmdArg1.isEmpty()){
+						pm.createParty(pl, cmdArg1);
+						return true;
 					}
+					pl.sendMessage("U have to define a Partyname, else I will choose one...");
+					pl.sendMessage("I think \"Noobgroup\" sounds nice, or \"Failgods\"");
+					return true;
+				}
+				//Console, atm not allowed to create party, prob new cmd: /party create [partyname] [ownername]
+				if (isConsole){
+					sender.sendMessage("U r here to work, let the Players play!");
+					return true;
+				}
+				return false;
+			}
+			//cmd "/party list"
+			if (cmdSpec.equals("list")){
+				//Player&Console, both allowed to see all Groups
+				pm.listPartys(sender);
+			}
+			//cmd "/party members (groupname)", if no groupname playergroup is choosen
+			if (cmdSpec.equals("members")){
+				//Players, allowed to simply /party members
+				if (isPlayer){
+					Party toList = (cmdArg1.isEmpty()) ? pm.getPlayersParty(pl) : pm.getParty(cmdArg1);
+					pm.listMembers(pl, toList);
+					return true;
+				}
+				//Console, must define (groupname)
+				if (isConsole){
+					if (!cmdArg1.isEmpty()){
+						pm.listMembers(sender, pm.getParty(cmdArg1));
+						return true;
+					}
+					sender.sendMessage("I'm reading in ur mind to see wich group u want to list");
+					sender.sendMessage("Yeah i just need a second, pls wait!");
+					return true;
+				}
+				return false;
+			}
+			//cmd "/party kick [playerToKick]"
+			if (cmdSpec.equals("kick")){
+				//Players, only allowed to kick som1 if creator of group or Op
+				if (isPlayer){
+					if (!cmdArg1.isEmpty()){
+						//Op allowd to bypass CreatorPermission
+						if (isOp){
+							pm.kickMember((CommandSender) pl, cmdArg1);
+							return true;
+						}
+						pm.kickMember(pl, cmdArg1);
+						return true;
+					}
+					pl.sendMessage("Pls define a player to kick: /player kick [playerToKick]");
+					return true;
+				}
+				//Console, allowed to kick som1
+				if (isConsole){
+					if (!cmdArg1.isEmpty()){
+						pm.kickMember((CommandSender) pl, cmdArg1);
+						return true;
+					}
+					sender.sendMessage("Who should be kicked? U? Yeah Prob U should");
+					sender.sendMessage("U got kicked by Server! Pls dont reconnect!");
+					return true;
 				}
 			}
-			
-			//PlayerAndConsCmds
-						//-----------------------				
-						if ((args.length>=1)) {
-							// cmd /party list
-							if (args[0].equalsIgnoreCase("list")){
-								listPartys(sender);
-								return true;
-							}
-						}
-			//PlayerOnlyCmds
-						if (sender instanceof Player){
-							Player pl = (Player) sender;
-							//cmd /party
-							if (args.length <= 0) {
-								justParty(pl);
-								return true;
-							}
-							//cmd with 1 or more options
-							if (args.length >= 1) {
-				//-----------------------				
-								//cmd /party create
-								if (args[0].equalsIgnoreCase("create")) {
-									if (args[1]!=null){
-										createParty(pl, args[1]);
-									} else {
-										pl.sendMessage("U must define a Partyname!");
-									}
-									return true;
-								}
-				//-----------------------				
-								if (args[0].equalsIgnoreCase("join")) {
-									if (args[1]!=null){
-										joinParty(pl, args[1]);
-									} else {
-										pl.sendMessage("U must define a Partyname!");
-									}
-									return true;
-								}
-				//-----------------------					
-								if (args[0].equalsIgnoreCase("leave")) {			
-									leaveParty(pl);
-									return true;
-								}
-				//-----------------------				
-								if (args[0].equalsIgnoreCase("kick")) {
-									if (args[1]!=null){
-										kickMember(pl, args[1]);
-									} else {
-										pl.sendMessage("U must define a Membername!");
-									}
-									return true;
-								}
-				//-----------------------				
-								if (args[0].equalsIgnoreCase("members")) {
-									listMembers(pl);
-									return true;
-								}
-							}
-
-						}
-					
-					return false;
+			return false;
 	}
-	
-	//--------Commands:
-	//--------
-		public void justParty(Player pl){
-			String partyN = master.getMetadataString(pl, "Party", master);
-			if (partyN!=null && !partyN.isEmpty()){
-				pl.sendMessage("U r Member of the Group \"" +partyN+"\"");
-			} else {
-				pl.sendMessage("U r ronry rike a ronry worf!");
-			}
-		}
-	//--------
-		public void createParty(Player pl, String partyN){
-			if (!master.partyExists(partyN)){
-				String creatorName = pl.getName();
-				Party newParty = new Party(creatorName, partyN);
-				master.registerParty(newParty);
-				master.setMetadata(pl, "Party",
-						(Object) newParty.getName(), master);
-				pl.sendMessage("U created a new Party called: "+ partyN);
-			} else {
-				pl.sendMessage("There is already a Party called "+ partyN);
-			}	
-		}
-		
-		public void joinParty(Player pl, String partyN){
-			Party plParty = master.getParty(partyN);
-			String oldParty = master.getMetadataString(pl, "Party", master);
-			if (oldParty!=null && !oldParty.isEmpty()){
-				pl.sendMessage("U have to leave ur Group "+oldParty+" first!");
-			} else {
-			if (plParty != null) {
-				plParty.addMember(pl.getName());
-				master.setMetadata(pl, "Party",
-						(Object) plParty.getName(), master);
-				pl.sendMessage("U joined the Party " + partyN);
-				for (String member: plParty.getMember()){
-					master.getPlayer(member).sendMessage(pl.getName()+" has joined ur Party!");
-				}
-			} else {
-				pl.sendMessage("There is no Party, known by this name!");
-			}}
-		}
-		
-		public void leaveParty(Player pl){
-			Party plParty = master.getPlayersParty(pl);
-			if (plParty!=null){
-				plParty.rmMember(pl.getName());
-				master.setMetadata(pl, "Party", null, master);
-				pl.sendMessage("U leaved Party "+ plParty.getName());
-				if (plParty.getMember().size() <= 0) {
-					master.unregisterParty(plParty);
-				} else {
-					for (String member: plParty.getMember()){
-						master.getPlayer(member).sendMessage(pl.getName()+" has left ur Party!");
-					}
-				}
-			} else {
-				pl.sendMessage("U cant leave Nothing!");
-			}
 
-		}
-		
-		public void listPartys(CommandSender cmdSd){
-			cmdSd.sendMessage("Partys:");
-			int i = 1;
-			for (Party parties : master.getOpenPartys()){
-				cmdSd.sendMessage(i++ +". "+parties.getName());
-			}
-		}
-		
-		public void kickMember(Player pl, String toKick){
-			Party plParty = master.getPlayersParty(pl);
-			if (plParty!=null){
-				if (plParty.isCreator(pl.getName())){
-					if (plParty.isMember(toKick)){
-						plParty.rmMember(toKick);
-						master.getPlayer(toKick).sendMessage("U got kicked from Party "+plParty.getName());
-						pl.sendMessage("U kicked "+toKick+" from Party "+plParty.getName());
-					} else {
-						pl.sendMessage(toKick + " is no Member of "+ plParty.getName());
-					}
-				} else {
-					pl.sendMessage("U must be Creator of a Group to kick some1!");
-				}
-			} else {
-				pl.sendMessage("U must be Creator of a Party!");
-			} 
-		}
-		
-		public void listMembers(Player pl, Party toList, boolean showHealth){
-			if (toList!=null){
-				String creator = toList.getCreator();
-				pl.sendMessage("#-----"+toList.getName()+"-----#");
-				//Show Health 
-				String toSend="Creator: ";
-				if (showHealth){
-					toSend+=master.colorByHealth(master.getPlayer(creator));
-				}
-				toSend+=creator;
-				pl.sendMessage(toSend);
-				//-
-				pl.sendMessage("Members:");
-				for (String member: toList.getMember()){
-					if (!member.equalsIgnoreCase(creator)){
-						toSend="     ";
-						if (showHealth){
-							toSend+=master.colorByHealth(master.getPlayer(member));
-						}
-						toSend+=member;
-						pl.sendMessage(toSend);
-					}
-				}
-			} else {
-				pl.sendMessage("There is no Party by the Name!");
-			}
-		}
-		
+				
+
 		
 }

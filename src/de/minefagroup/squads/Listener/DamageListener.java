@@ -45,7 +45,7 @@ public class DamageListener implements Listener{
 			if (damager instanceof Player){
 				Player damagerPl = (Player) damager;			
 				Player victim = (Player) edbee.getEntity();
-				Party damagerParty = master.getPlayersParty(damagerPl);
+				Party damagerParty = master.getPartyManager().getPlayersParty(damagerPl);
 				//checkForDamagerParty
 				if (damagerParty!=null){
 					if (damagerParty.isMember(victim.getName())){
@@ -61,7 +61,7 @@ public class DamageListener implements Listener{
 		EntityDamageByEntityEvent edbee = edepass;
 		if (edbee.getEntity() instanceof Player){
 			Player pl = (Player) edbee.getEntity();			
-			if (master.getPlayersParty(pl)!=null){
+			if (master.getPartyManager().getPlayersParty(pl)!=null){
 				return;
 			}
 			if (edbee.getDamage()>=pl.getHealth()){
@@ -95,7 +95,7 @@ public class DamageListener implements Listener{
 					((Creature) damager).setTarget(null);
 				}
 				//TODO: StopPlayerMovement
-				master.getParty(pl.getName()).memberSetDead(pl.getName());	
+				master.getPartyManager().getParty(pl.getName()).memberSetDead(pl.getName());	
 			}
 		}
 	}
